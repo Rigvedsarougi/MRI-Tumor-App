@@ -17,33 +17,28 @@ from sklearn.metrics import (accuracy_score, precision_score,
                            recall_score, f1_score, confusion_matrix)
 from sklearn.model_selection import train_test_split
 
-# Page configuration
 st.set_page_config(
     page_title="Brain MRI Tumor Classification",
     page_icon=":brain:",
     layout="wide"
 )
 
-# Constants
-IMG_SIZE = (224, 224)  # Standard size for many CNN models
+IMG_SIZE = (224, 224)
 BATCH_SIZE = 32
-EPOCHS = 30  # Increased from original
-PATIENCE = 5  # For early stopping
+EPOCHS = 30
+PATIENCE = 5
 
-# Sidebar
 st.sidebar.title("Navigation")
 page = st.sidebar.radio("Go to", 
     ["Dataset Exploration", "Image Preprocessing", "Model Training", "Prediction"])
 
-# Utility Functions
 def explore_dataset(data_path):
-    """Load and return sample images from the dataset."""
     samples = []
     for class_name in ["yes", "no"]:
         class_path = os.path.join(data_path, class_name)
         if os.path.exists(class_path):
             images = os.listdir(class_path)
-            for _ in range(min(4, len(images))):  # Max 4 per class
+            for _ in range(min(4, len(images))):
                 img_name = random.choice(images)
                 img_path = os.path.join(class_path, img_name)
                 img = Image.open(img_path)
@@ -51,25 +46,19 @@ def explore_dataset(data_path):
     return samples
 
 def preprocess_image(image, target_size=IMG_SIZE):
-    """Enhanced preprocessing with PIL only."""
     if isinstance(image, np.ndarray):
         image = Image.fromarray(image)
     
-    # Convert to grayscale if needed
     if image.mode != 'L':
         image = image.convert('L')
     
-    # Resize with better interpolation
     image = image.resize(target_size, Image.LANCZOS)
     
-    # Contrast enhancement with more control
     enhancer = ImageEnhance.Contrast(image)
-    image = enhancer.enhance(1.5)  # More subtle enhancement
+    image = enhancer.enhance(1.5)
     
-    # Denoising with different filter
     image = image.filter(ImageFilter.MedianFilter(size=3))
     
-    # Edge enhancement with custom kernel
     kernel = ImageFilter.Kernel((3, 3), 
                               (-1, -1, -1, 
                                -1, 9, -1, 
@@ -77,14 +66,12 @@ def preprocess_image(image, target_size=IMG_SIZE):
                               scale=1)
     image = image.filter(kernel)
     
-    # Convert to numpy array and normalize
     image = np.array(image) / 255.0
-    image = np.stack((image,)*3, axis=-1)  # Convert to 3 channels
+    image = np.stack((image,)*3, axis=-1)
     
     return image
 
 def plot_sample_images(samples, figsize=(12, 8)):
-    """Improved visualization of samples."""
     plt.figure(figsize=figsize)
     for i, (image, label) in enumerate(samples):
         plt.subplot(2, 4, i+1)
@@ -95,9 +82,7 @@ def plot_sample_images(samples, figsize=(12, 8)):
     return plt.gcf()
 
 def create_enhanced_model(input_shape=(224, 224, 3)):
-    """More powerful CNN architecture."""
     model = Sequential([
-        # Block 1
         Conv2D(32, (3, 3), activation='relu', padding='same', input_shape=input_shape),
         BatchNormalization(),
         Conv2D(32, (3, 3), activation='relu', padding='same'),
@@ -105,7 +90,6 @@ def create_enhanced_model(input_shape=(224, 224, 3)):
         MaxPooling2D((2, 2)),
         Dropout(0.2),
         
-        # Block 2
         Conv2D(64, (3, 3), activation='relu', padding='same'),
         BatchNormalization(),
         Conv2D(64, (3, 3), activation='relu', padding='same'),
@@ -113,7 +97,6 @@ def create_enhanced_model(input_shape=(224, 224, 3)):
         MaxPooling2D((2, 2)),
         Dropout(0.3),
         
-        # Block 3
         Conv2D(128, (3, 3), activation='relu', padding='same'),
         BatchNormalization(),
         Conv2D(128, (3, 3), activation='relu', padding='same'),
@@ -121,7 +104,6 @@ def create_enhanced_model(input_shape=(224, 224, 3)):
         MaxPooling2D((2, 2)),
         Dropout(0.4),
         
-        # Classification block
         Flatten(),
         Dense(256, activation='relu'),
         BatchNormalization(),
@@ -138,8 +120,6 @@ def create_enhanced_model(input_shape=(224, 224, 3)):
     return model
 
 def train_enhanced_model(data_dir):
-    """Enhanced training process with callbacks."""
-    # More aggressive augmentation
     train_datagen = ImageDataGenerator(
         rescale=1./255,
         validation_split=0.2,
@@ -172,7 +152,6 @@ def train_enhanced_model(data_dir):
         shuffle=False
     )
     
-    # Callbacks
     callbacks = [
         EarlyStopping(monitor='val_loss', patience=PATIENCE, restore_best_weights=True),
         ModelCheckpoint('models/best_model.h5', save_best_only=True),
@@ -189,10 +168,8 @@ def train_enhanced_model(data_dir):
         verbose=1
     )
     
-    # Load best model
     model = load_model('models/best_model.h5')
     
-    # Evaluate
     val_pred = (model.predict(val_gen) > 0.5).astype(int)
     val_true = val_gen.classes
     
@@ -207,10 +184,8 @@ def train_enhanced_model(data_dir):
     return model, history, metrics
 
 def plot_training_history(history):
-    """Enhanced training history visualization."""
     fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 5))
     
-    # Accuracy plot
     ax1.plot(history.history['accuracy'], label='Train Accuracy')
     ax1.plot(history.history['val_accuracy'], label='Validation Accuracy')
     ax1.set_title('Model Accuracy')
@@ -218,7 +193,6 @@ def plot_training_history(history):
     ax1.set_xlabel('Epoch')
     ax1.legend()
     
-    # Loss plot
     ax2.plot(history.history['loss'], label='Train Loss')
     ax2.plot(history.history['val_loss'], label='Validation Loss')
     ax2.set_title('Model Loss')
@@ -230,11 +204,9 @@ def plot_training_history(history):
     return fig
 
 def predict_tumor(model, image):
-    """Enhanced prediction with confidence thresholds."""
     img_array = np.expand_dims(image, axis=0)
     prediction_prob = model.predict(img_array)[0][0]
     
-    # More nuanced confidence thresholds
     if prediction_prob > 0.7:
         return "Tumor Detected (High Confidence)", prediction_prob
     elif prediction_prob > 0.55:
@@ -246,7 +218,6 @@ def predict_tumor(model, image):
     else:
         return "Normal (High Confidence)", 1 - prediction_prob
 
-# Main App
 st.title("Enhanced Brain MRI Tumor Classification")
 
 if page == "Dataset Exploration":
@@ -333,7 +304,6 @@ elif page == "Model Training":
         if not os.path.exists("data/yes") or not os.path.exists("data/no"):
             st.error("Please ensure you have both 'yes' and 'no' folders in the data directory")
         else:
-            # Create models directory if not exists
             os.makedirs("models", exist_ok=True)
             
             with st.spinner("Training enhanced model (this may take 10-20 minutes)..."):
@@ -363,7 +333,7 @@ elif page == "Model Training":
             ax.set_xticklabels(['No Tumor', 'Tumor'])
             ax.set_yticklabels(['No Tumor', 'Tumor'])
             st.pyplot(fig)
-                        st.session_state.model = model
+            st.session_state.model = model
 
 elif page == "Prediction":
     st.header("Enhanced Tumor Prediction")
@@ -372,7 +342,6 @@ elif page == "Prediction":
                                    type=["jpg", "jpeg", "png"])
     
     if uploaded_file is not None:
-        # Load model if not already loaded
         if 'model' not in st.session_state:
             if os.path.exists("models/best_model.h5"):
                 st.session_state.model = load_model("models/best_model.h5")
@@ -414,10 +383,8 @@ elif page == "Prediction":
         - Trained with early stopping and learning rate reduction
         """)
 
-# Footer
 st.markdown("---")
 st.markdown("""
 **Enhanced Brain MRI Tumor Classification**  
 *AIMIL Ltd. Data Scientist Assignment - Rigved Sarougi*  
-[GitHub Repository](https://github.com/yourusername/brain-mri-tumor-classification)
 """)
