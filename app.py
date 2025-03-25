@@ -99,7 +99,7 @@ def create_basic_cnn(input_shape=(256, 256, 3)):
                  metrics=['accuracy'])
     return model
 
-def train_models(data_dir, epochs=5, batch_size=32):
+def train_models(data_dir, epochs=10, batch_size=32):
     """Train models and return their histories and metrics."""
     datagen = ImageDataGenerator(
         rescale=1./255,
