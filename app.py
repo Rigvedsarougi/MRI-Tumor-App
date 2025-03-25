@@ -218,10 +218,10 @@ def predict_tumor(model, image):
     else:
         return "Normal (High Confidence)", 1 - prediction_prob
 
-st.title("Enhanced Brain MRI Tumor Classification")
+st.title("Brain MRI Tumor Classification")
 
 if page == "Dataset Exploration":
-    st.header("Enhanced Dataset Exploration")
+    st.header("Dataset Exploration")
     
     if st.button("Load Sample Images"):
         with st.spinner("Loading images..."):
@@ -254,7 +254,7 @@ if page == "Dataset Exploration":
         """)
 
 elif page == "Image Preprocessing":
-    st.header("Enhanced Image Preprocessing")
+    st.header("Image Preprocessing")
     
     uploaded_file = st.file_uploader("Upload an MRI image to see preprocessing", 
                                    type=["jpg", "jpeg", "png"])
@@ -277,7 +277,7 @@ elif page == "Image Preprocessing":
                         use_column_width=True, 
                         channels="RGB")
                 
-        st.subheader("Enhanced Preprocessing Steps")
+        st.subheader("Preprocessing Steps")
         st.markdown("""
         1. **Resizing**: Standardized to 224x224 pixels (LANCZOS interpolation)
         2. **Grayscale Conversion**: Convert to single channel
@@ -289,10 +289,10 @@ elif page == "Image Preprocessing":
         """)
 
 elif page == "Model Training":
-    st.header("Enhanced Model Training")
+    st.header("Model Training")
     
     st.write("""
-    **Enhanced CNN Architecture:**
+    **CNN Architecture:**
     - 3 Convolutional Blocks with Batch Normalization
     - Increased dropout rates (0.2-0.5) for better regularization
     - Larger dense layer (256 units)
@@ -300,7 +300,7 @@ elif page == "Model Training":
     - Early stopping, model checkpointing, and LR reduction
     """)
     
-    if st.button("Train Enhanced Model"):
+    if st.button("Train Model"):
         if not os.path.exists("data/yes") or not os.path.exists("data/no"):
             st.error("Please ensure you have both 'yes' and 'no' folders in the data directory")
         else:
@@ -336,7 +336,7 @@ elif page == "Model Training":
             st.session_state.model = model
 
 elif page == "Prediction":
-    st.header("Enhanced Tumor Prediction")
+    st.header("Tumor Prediction")
     
     uploaded_file = st.file_uploader("Upload an MRI image for tumor detection", 
                                    type=["jpg", "jpeg", "png"])
@@ -375,7 +375,7 @@ elif page == "Prediction":
                 
         st.subheader("Model Information")
         st.write("""
-        **Enhanced CNN Architecture:**
+        **CNN Architecture:**
         - 3 Convolutional Blocks with Batch Normalization
         - MaxPooling and increasing Dropout (0.2-0.5)
         - 256-unit Dense layer
@@ -385,6 +385,6 @@ elif page == "Prediction":
 
 st.markdown("---")
 st.markdown("""
-**Enhanced Brain MRI Tumor Classification**  
+**Brain MRI Tumor Classification**  
 *AIMIL Ltd. Data Scientist Assignment - Rigved Sarougi*  
 """)
