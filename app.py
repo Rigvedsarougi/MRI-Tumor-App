@@ -363,9 +363,7 @@ elif page == "Model Training":
             ax.set_xticklabels(['No Tumor', 'Tumor'])
             ax.set_yticklabels(['No Tumor', 'Tumor'])
             st.pyplot(fig)
-            
-            # Save the model for prediction page
-            st.session_state.model = model
+                        st.session_state.model = model
 
 elif page == "Prediction":
     st.header("Enhanced Tumor Prediction")
@@ -420,6 +418,6 @@ elif page == "Prediction":
 st.markdown("---")
 st.markdown("""
 **Enhanced Brain MRI Tumor Classification**  
-*AIMIL Ltd. Data Scientist Assignment - Improved Version*  
+*AIMIL Ltd. Data Scientist Assignment - Rigved Sarougi*  
 [GitHub Repository](https://github.com/yourusername/brain-mri-tumor-classification)
 """)
